@@ -1,7 +1,8 @@
     .equ    STACK_SIZE, 64
     .equ    INPORT_ADDRESS, 0xFF82
     .equ    OUTPORT_ADDRESS, 0xFFC2
-    .equ    pTC_ADDRESS, 0xFF00
+    .equ    pTC_TMR_ADDRESS, 0xFF01
+    .equ    pTC_COUNT, 0xFA
     .equ    INIT_VAL, 0xF
 
     .text
@@ -14,7 +15,12 @@ program:
 stack_top_addr:
 	.word	stack_top
 
-main:; R4 = led_r R5 = led_g lets see if this works
+main:; R4 = led_r R5 = led_g R6 = n seconds counter? idk lets see
+    mov R0, #pTC_TMR_ADDRESS && 0xFF
+    movt R0, #(pTC_TMR_ADDRESS >> 8) && 0xFF
+    mov R1, #pTC_COUNT
+    str R1 [R0, #0]
+main_start:
     bl inport_read
     lsr R0, R0, #5
     mov R6, #8
@@ -29,7 +35,7 @@ main_check:
 game_loop:
     ;all game logic here
 game_end:
-    b   main
+    b   main_start
 out_hole_leds:;
     push lr
     mov R1, R4
