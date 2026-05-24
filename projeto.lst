@@ -1,0 +1,209 @@
+P16 assembler v1.5 (Feb  9 2024)	c:\Users\tboyv\Documents\ISEL\1ano25-26\2semestre\ac\projeto\projeto.lst	Mon May 18 13:04:28 2026
+
+Sections
+Index   Name            Address   Size
+0       .text           0000      00D8 216
+1       .data           00D8      0007 7
+2       .stack          00E0      0040 64
+
+Symbols
+Name                    Type      Value       Section
+check_hit               LABEL     001C 28     .text
+check_level             LABEL     00A6 166    .text
+end_check               LABEL     0082 130    .text
+end_level               LABEL     008E 142    .text
+end_loop                LABEL     0018 24     .text
+INPORT_ADDRESS          ABSOLUTE  FF82 65410  .text
+inport_read             LABEL     00B6 182    .text
+line#31                 LABEL     001A 26     .text
+main                    LABEL     0008 8      .text
+main_loop               LABEL     0012 18     .text
+no_input                LABEL     0036 54     .text
+out_hole_leds           LABEL     003A 58     .text
+out_hole_leds_loop      LABEL     0040 64     .text
+OUTPORT_ADDRESS         ABSOLUTE  FFC2 65474  .text
+outport_write           LABEL     009A 154    .text
+program                 LABEL     0002 2      .text
+round_check             LABEL     0056 86     .text
+rounds                  LABEL     00DA 218    .data
+rounds_addr             LABEL     00D8 216    .data
+sleep                   LABEL     00C2 194    .text
+sleep_end               LABEL     00D4 212    .text
+sleep_inner_loop        LABEL     00CC 204    .text
+sleep_outer_loop        LABEL     00C8 200    .text
+STACK_SIZE              ABSOLUTE  0040 64     .text
+stack_top               LABEL     0120 288    .stack
+stack_top_addr          LABEL     0006 6      .text
+timer                   LABEL     00DE 222    .data
+timer_addr              LABEL     00DC 220    .data
+victory_check           LABEL     001A 26     .text
+
+Code listing
+   1           	
+   2          	    .equ    STACK_SIZE, 64
+   3          	    .equ    INPORT_ADDRESS, 0xFF82
+   4          	    .equ    OUTPORT_ADDRESS, 0xFFC2
+   5           	
+   6           	    .text
+   7 0000 00 58		b	program
+   8           	
+   9           	program:
+  10 0002 1D 0C		ldr	sp, stack_top_addr
+  11 0004 01 58	    b   main
+  12           	
+  13           	stack_top_addr:
+  14 0006 20 01		.word	stack_top
+  15           	
+  16           	main: ; R1 = HOLE_R R2 = HOLE_G
+  17 0008 4E 5C	    bl check_level
+  18 000A F1 60	    mov R1, #0xF
+  19 000C F2 60	    mov R2, #0xF 
+  20 000E 15 5C	    bl out_hole_leds
+  21 0010 00 58	    b main_loop
+  22           	
+  23           	main_loop:
+  24 0012 04 5C	    bl check_hit ;check if there is a hit on the hole
+  25 0014 12 5C	    bl out_hole_leds ; output hit
+  26 0016 FD 5B	    b main_loop
+  27           	end_loop:
+  28 0018 00 58	    b victory_check
+  29           	
+  30           	victory_check:
+  31 001A FF 5B	    b   .
+  32           	
+  33           	check_hit:
+  34 001C 0E 24	    push lr
+  35 001E 4B 5C	    bl inport_read; R0 = inport
+  36 0020 F3 60	    mov R3, #0xF ; 1111
+  37 0022 80 C1	    and R0, R0, R3 ; inport first 4 bits
+  38 0024 01 B0	    mov R1, R0 
+  39 0026 00 C0	    and R0, R0, R0 ; if R0 = 0
+  40 0028 06 40	    beq no_input
+  41 002A 00 C1	    and R0, R0, R2 ; hits
+  42 002C 02 D1	    eor R2, R0, R2; led_g xor hit = remaining green
+  43 002E 05 5C	    bl out_hole_leds
+  44 0030 03 60	    mov R3, #0
+  45 0032 A2 C1	    and R2, R2, R3
+  46 0034 10 5C	    bl round_check; check curr round to load holes
+  47           	no_input:
+  48 0036 0E 04	    pop lr
+  49 0038 0F B7	    mov pc,lr
+  50           	
+  51           	out_hole_leds:
+  52 003A 0E 24	    push lr
+  53 003C 02 24	    push R2
+  54 003E 43 60	    mov R3, #4 ; led total
+  55           	out_hole_leds_loop:
+  56 0040 91 E8	    lsr R1, R1, #1 ; led red » 1 lost bit = C
+  57 0042 00 D8	    rrx R0, R0 ; led_grid » 1 highest bit = curr C
+  58 0044 A2 E8	    lsr R2, R2, #1 ; led green » 1 lost bit = C
+  59 0046 00 D8	    rrx R0, R0 ; led_grid » 1 highest bit = curr C
+  60 0048 B3 A8	    sub R3, R3, #1 ; i--
+  61 004A FA 47	    bne out_hole_leds_loop ;if i != 0 PC -» loop
+  62 004C 00 EC	    lsr R0, R0, #8 ;R0 16 bit, outport uses lowest byte
+  63 004E 25 5C	    bl outport_write
+  64 0050 02 04	    pop R2
+  65 0052 0E 04	    pop lr
+  66 0054 0F B7	    mov pc,lr
+  67           	
+  68           	round_check:
+  69 0056 0E 24	    push lr
+  70 0058 01 24	    push R1
+  71 005A 00 24	    push R0
+  72 005C 00 60	    mov R0, #0
+  73 005E 20 C0	    and R0, R2, R0
+  74 0060 10 40	    beq end_check
+  75 0062 10 60	    mov R0, #1
+  76 0064 A1 0F	    ldr R1, rounds
+  77 0066 91 A0	    add R1, R1, #1
+  78 0068 43 60	    mov R3, #4
+  79 006A B0 B8	    cmp R3, R1
+  80 006C 0A 50	    bge end_check
+  81 006E 80 E0	    lsl R0, R0, #1
+  82 0070 80 A0	    add R0, R0, #1
+  83 0072 73 60	    mov R3, #7
+  84 0074 B0 B8	    cmp R3, R1
+  85 0076 05 50	    bge end_check
+  86 0078 80 E0	    lsl R0, R0, #1
+  87 007A 80 A0	    add R0, R0, #1
+  88 007C B3 60	    mov R3, #11
+  89 007E B0 B8	    cmp R3, R1
+  90 0080 06 50	    bge end_level
+  91           	end_check:
+  92 0082 A3 0E	    ldr R3, rounds_addr
+  93 0084 31 20	    str R1, [R3, #0]
+  94 0086 02 B0	    mov R2, R0
+  95 0088 00 04	    pop R0
+  96 008A 01 04	    pop R1
+  97 008C 0E 04	    pop lr
+  98           	end_level:
+  99 008E 43 0E	    ldr R3, rounds_addr
+ 100 0090 31 20	    str R1, [R3, #0]
+ 101 0092 02 B0	    mov R2, R0
+ 102 0094 00 04	    pop R0
+ 103 0096 01 04	    pop R1
+ 104 0098 BF 5B	    b end_loop
+ 105           	
+ 106           	outport_write:
+ 107 009A 01 24	    push R1
+ 108 009C 21 6C		mov	R1, #OUTPORT_ADDRESS & 0xFF
+ 109 009E F1 7F		movt R1, #(OUTPORT_ADDRESS >> 8) & 0xFF
+ 110 00A0 10 28		strb R0, [R1, #0]
+ 111 00A2 01 04	    pop R1
+ 112 00A4 0F B7		mov	pc, lr
+ 113           	
+ 114           	check_level:
+ 115 00A6 0E 24	    push lr
+ 116 00A8 01 24	    push R1
+ 117           	
+ 118 00AA 05 5C	    bl inport_read
+ 119 00AC 01 6E	    mov R1, #0xE0
+ 120 00AE 80 C0	    and R0, R0, R1 ; inport last 3 bits
+ 121 00B0 80 EA	    lsr R0, R0, #5 ;to work with lowest bits
+ 122 00B2 42 0D	    ldr R2, timer_addr
+ 123 00B4 20 20	    str R0, [R2, #0]
+ 124           	
+ 125           	inport_read: ; 0-3 buttons 5-7 level switches
+ 126 00B6 01 24	    push R1
+ 127 00B8 21 68	    mov R1, #INPORT_ADDRESS & 0xFF
+ 128 00BA F1 7F	    movt R1, #(INPORT_ADDRESS >> 8) & 0xFF
+ 129 00BC 10 08	    ldrb R0, [R1, #0]
+ 130 00BE 01 04	    pop R1
+ 131 00C0 0F B7	    mov pc, lr
+ 132           	
+ 133           	sleep: ;R0 = n segundos
+ 134 00C2 01 24	    push R1
+ 135 00C4 00 C0	    and R0, R0, R0
+ 136 00C6 06 40	    beq sleep_end
+ 137           	sleep_outer_loop:
+ 138 00C8 51 64	    mov R1, #0x45 ;to change
+ 139 00CA 01 71	    movt R1, #0x10; to change
+ 140           	sleep_inner_loop:
+ 141 00CC 91 A8	    sub R1, R1, #1
+ 142 00CE FE 47	    bne sleep_inner_loop
+ 143 00D0 80 A8	    sub R0, R0, #1
+ 144 00D2 FA 47	    bne sleep_outer_loop
+ 145           	sleep_end:
+ 146 00D4 01 04	    pop R1
+ 147 00D6 0F B7	    mov pc, lr
+ 148           	
+ 149           	; Seccao:    data
+ 150           	; Descricao: Guarda as variaveis globais
+ 151           		.data
+ 152           	rounds_addr:
+ 153 00D8 DA 00	    .word rounds
+ 154           	rounds:
+ 155 00DA 00 00	    .word 0x0
+ 156           	timer_addr:
+ 157 00DC DE 00	    .word timer
+ 158           	timer:
+ 159 00DE 00   	    .space 1
+ 160           	
+ 161           	
+ 162           	
+ 163           	    .stack
+ 164 00E0 00   		.space	STACK_SIZE
+ 164 .... ..
+ 164 011F 00
+ 165           	stack_top:
+ 165           	

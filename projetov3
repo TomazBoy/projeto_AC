@@ -1,0 +1,6 @@
+    .text
+	b	program
+
+program:
+	ldr	sp, stack_top_addr
+    b   main
