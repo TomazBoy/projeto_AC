@@ -19,7 +19,7 @@ main:; R4 = led_r R5 = led_g R6 = n seconds counter? idk lets see
     mov R0, #pTC_TMR_ADDRESS && 0xFF
     movt R0, #(pTC_TMR_ADDRESS >> 8) && 0xFF
     mov R1, #pTC_COUNT
-    str R1 [R0, #0]
+    str R1 , [R0, #0]
 main_start:
     bl inport_read
     lsr R0, R0, #5
