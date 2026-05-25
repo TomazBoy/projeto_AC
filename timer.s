@@ -1,7 +1,7 @@
     .equ    STACK_SIZE, 64
     .equ    INPORT_ADDRESS, 0xFF82
     .equ    OUTPORT_ADDRESS, 0xFFC2
-    .equ    pTC_ADDRESS, 0xFF00
+    .equ    pTC_ADDRESS, 0xFF
     .equ    TCR, 0x00
     .equ    TMR, 0x01
     .equ    TC, 0x02
@@ -22,7 +22,7 @@ main:; R4 = led_r R5 = led_g R6 = n seconds counter? idk lets see
     orr R0, R0, R1 ; enable interrupt bit 4
     msr CPSR, R0 ; save CPSR
     mov R0, #TMR
-    movt R0, #(pTC_ADDRESS >> 8) & 0xFF
+    movt R0, #(pTC_ADDRESS) & 0xFF
     mov R1, #pTC_COUNT
     str R1 , [R0, #0];stores match value in TMR
 main_start:
@@ -42,7 +42,7 @@ isr_end:
     mov R0, #TIR
     movt R0, #(pTC_ADDRESS >> 8) & 0xFF
     mov R2, #0
-    str R2 ,[R0, #0];todo
+    str R2 ,[R0, #0]
     movs pc, lr
 
 sw_addr:
