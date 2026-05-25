@@ -70,8 +70,20 @@ check_press:; R0 = inport (curr) R1 prev_state
     mov pc,lr
 
 isr:
-    ;todo
+    ldr R0, sw_addr
+    ldr R1, sw_counter
+    ldr R2, pTC_COUNT
+    cmp R1, R2
+    beq isr_end
+    add R1, R1, #1
+    str R1, [R0, #0]
     movs pc, lr
+isr_end:
+    add R6, R6, #1
+    movs pc, lr
+
+sw_addr:
+    .word sw_counter
 
 in_prev_addr:
     .word in_prev_state
