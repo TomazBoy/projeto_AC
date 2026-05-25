@@ -1,39 +1,40 @@
-P16 assembler v1.5 (Feb  9 2024)	c:\Users\tboyv\Documents\ISEL\1ano25-26\2semestre\ac\projeto\projetov3.lst	Sun May 24 20:02:13 2026
+P16 assembler v1.5 (Feb  9 2024)	c:\Users\tboyv\Documents\ISEL\1ano25-26\2semestre\ac\projeto\projetov3.lst	Mon May 25 01:06:47 2026
 
 Sections
 Index   Name            Address   Size
-0       .text           0000      007C 124
-1       .data           007C      0004 4
-2       .stack          0080      0040 64
+0       .text           0000      0088 136
+1       .data           0088      0004 4
+2       .stack          008C      0040 64
 
 Symbols
 Name                    Type      Value       Section
-check_press             LABEL     0042 66     .text
-game_end                LABEL     0024 36     .text
-game_loop               LABEL     0024 36     .text
-in_prev_addr            LABEL     0054 84     .text
-in_prev_state           LABEL     007C 124    .data
+check_press             LABEL     004C 76     .text
+game_end                LABEL     002E 46     .text
+game_loop               LABEL     002E 46     .text
+in_prev_addr            LABEL     0060 96     .text
+in_prev_state           LABEL     0088 136    .data
 INIT_VAL                ABSOLUTE  000F 15     .text
 INPORT_ADDRESS          ABSOLUTE  FF82 65410  .text
-inport_read             LABEL     005E 94     .text
-main                    LABEL     0008 8      .text
-main_check              LABEL     001E 30     .text
-main_start              LABEL     0010 16     .text
-out_hole_leds           LABEL     0026 38     .text
-out_hole_leds_loop      LABEL     002E 46     .text
+inport_read             LABEL     006A 106    .text
+isr                     LABEL     005E 94     .text
+main                    LABEL     000A 10     .text
+main_check              LABEL     0028 40     .text
+main_start              LABEL     001A 26     .text
+out_hole_leds           LABEL     0030 48     .text
+out_hole_leds_loop      LABEL     0038 56     .text
 OUTPORT_ADDRESS         ABSOLUTE  FFC2 65474  .text
-outport_write           LABEL     0056 86     .text
-program                 LABEL     0002 2      .text
+outport_write           LABEL     0062 98     .text
+program                 LABEL     0004 4      .text
 pTC_COUNT               ABSOLUTE  00FA 250    .text
 pTC_TMR_ADDRESS         ABSOLUTE  FF01 65281  .text
-sleep                   LABEL     0066 102    .text
-sleep_end               LABEL     0078 120    .text
-sleep_inner_loop        LABEL     0070 112    .text
-sleep_outer_loop        LABEL     006C 108    .text
+sleep                   LABEL     0072 114    .text
+sleep_end               LABEL     0084 132    .text
+sleep_inner_loop        LABEL     007C 124    .text
+sleep_outer_loop        LABEL     0078 120    .text
 STACK_SIZE              ABSOLUTE  0040 64     .text
-stack_top               LABEL     00C0 192    .stack
-stack_top_addr          LABEL     0006 6      .text
-sw_counter              LABEL     007E 126    .data
+stack_top               LABEL     00CC 204    .stack
+stack_top_addr          LABEL     0008 8      .text
+sw_counter              LABEL     008A 138    .data
 
 Code listing
    1          	    .equ    STACK_SIZE, 64
@@ -44,104 +45,113 @@ Code listing
    6          	    .equ    INIT_VAL, 0xF
    7           	
    8           	    .text
-   9 0000 00 58		b	program
-  10           	
-  11           	program:
-  12 0002 1D 0C		ldr	sp, stack_top_addr
-  13 0004 01 58	    b   main
-  14           	
-  15           	stack_top_addr:
-  16 0006 C0 00		.word	stack_top
-  17           	
-  18           	main:; R4 = led_r R5 = led_g R6 = n seconds counter? idk lets see
-  19 0008 10 60	    mov R0, #pTC_TMR_ADDRESS && 0xFF
-  20 000A 10 70	    movt R0, #(pTC_TMR_ADDRESS >> 8) && 0xFF
-  21 000C A1 6F	    mov R1, #pTC_COUNT
-  22 000E 01 20	    str R1 , [R0, #0]
-  23           	main_start:
-  24 0010 26 5C	    bl inport_read
-  25 0012 80 EA	    lsr R0, R0, #5
-  26 0014 86 60	    mov R6, #8
-  27 0016 66 88	    sub R6, R6, R0
-  28 0018 F4 60	    mov R4, #INIT_VAL
-  29 001A F5 60	    mov R5, #INIT_VAL
-  30 001C 04 5C	    bl  out_hole_leds
-  31           	main_check:
-  32 001E 11 5C	    bl check_press
-  33 0020 10 B8	    cmp R1, R0
-  34 0022 FD 4B	    bhs main_check ; check if first bit pressed
-  35           	game_loop:
-  36           	    ;all game logic here
-  37           	game_end:
-  38 0024 F5 5B	    b   main_start
-  39           	out_hole_leds:;
-  40 0026 0E 24	    push lr
-  41 0028 01 B2	    mov R1, R4
-  42 002A 82 B2	    mov R2, R5
-  43 002C 43 60	    mov R3, #4 ; for i in range 4
-  44           	out_hole_leds_loop:
-  45 002E 91 E8	    lsr R1, R1, #1 ; led red » 1 lost bit = C
-  46 0030 00 D8	    rrx R0, R0 ; led_grid » 1 highest bit = curr C
-  47 0032 A2 E8	    lsr R2, R2, #1 ; led green » 1 lost bit = C
-  48 0034 00 D8	    rrx R0, R0 ; led_grid » 1 highest bit = curr C
-  49 0036 B3 A8	    sub R3, R3, #1 ; i--
-  50 0038 FA 47	    bne out_hole_leds_loop ;if i != 0 PC -» loop
-  51 003A 00 EC	    lsr R0, R0, #8 ;R0 16 bit, outport uses lowest byte
-  52 003C 0C 5C	    bl outport_write
-  53 003E 0E 04	    pop lr
-  54 0040 0F B7	    mov pc,lr
-  55           	
-  56           	check_press:; R0 = inport (curr) R1 prev_state
-  57 0042 0E 24	    push lr
-  58 0044 0C 5C	    bl inport_read
-  59 0046 12 60	    mov R2, #1
-  60 0048 00 C1	    and R0, R0, R2 ; bit0 de inport
-  61 004A 81 0D	    ldr R1, in_prev_state ;R1 = in_prev_state (starts at 1 cuz inport read starts as 1 )
-  62 004C 32 0C	    ldr R2, in_prev_addr
-  63 004E 20 20	    str R0, [R2, #0]
-  64 0050 0E 04	    pop lr
-  65 0052 0F B7	    mov pc,lr
-  66           	
-  67           	in_prev_addr:
-  68 0054 7C 00	    .word in_prev_state
-  69           	
-  70           	outport_write:
-  71 0056 21 6C		mov	R1, #OUTPORT_ADDRESS & 0xFF
-  72 0058 F1 7F		movt R1, #(OUTPORT_ADDRESS >> 8) & 0xFF
-  73 005A 10 28		strb R0, [R1, #0]
-  74 005C 0F B7		mov	pc, lr
+   9 0000 01 58		b	program
+  10 0002 2D 58	    b   isr
+  11           	
+  12           	program:
+  13 0004 1D 0C		ldr	sp, stack_top_addr
+  14 0006 01 58	    b   main
+  15           	
+  16           	stack_top_addr:
+  17 0008 CC 00		.word	stack_top
+  18           	
+  19           	main:; R4 = led_r R5 = led_g R6 = n seconds counter? idk lets see
+  20 000A 60 B0	    mrs R0, CPSR ; move cpsr to r0
+  21 000C 01 61	    mov R1, #0x10
+  22 000E 80 C8	    orr R0, R0, R1 ; enable interrupt bit 4
+  23 0010 40 B0	    msr CPSR, R0 ; save cpsr
+  24 0012 10 60	    mov R0, #pTC_TMR_ADDRESS && 0xFF
+  25 0014 10 70	    movt R0, #(pTC_TMR_ADDRESS >> 8) && 0xFF
+  26 0016 A1 6F	    mov R1, #pTC_COUNT
+  27 0018 01 20	    str R1 , [R0, #0];stores value to save in pTC corresponding to 5ms each clock
+  28           	main_start:
+  29 001A 27 5C	    bl inport_read
+  30 001C 80 EA	    lsr R0, R0, #5
+  31 001E 86 60	    mov R6, #8
+  32 0020 66 88	    sub R6, R6, R0
+  33 0022 F4 60	    mov R4, #INIT_VAL
+  34 0024 F5 60	    mov R5, #INIT_VAL
+  35 0026 04 5C	    bl  out_hole_leds
+  36           	main_check:
+  37 0028 11 5C	    bl check_press
+  38 002A 10 B8	    cmp R1, R0
+  39 002C FD 4B	    bhs main_check ; check if first bit pressed
+  40           	game_loop:
+  41           	    ;all game logic here
+  42           	game_end:
+  43 002E F5 5B	    b   main_start
+  44           	out_hole_leds:;
+  45 0030 0E 24	    push lr
+  46 0032 01 B2	    mov R1, R4
+  47 0034 82 B2	    mov R2, R5
+  48 0036 43 60	    mov R3, #4 ; for i in range 4
+  49           	out_hole_leds_loop:
+  50 0038 91 E8	    lsr R1, R1, #1 ; led red » 1 lost bit = C
+  51 003A 00 D8	    rrx R0, R0 ; led_grid » 1 highest bit = curr C
+  52 003C A2 E8	    lsr R2, R2, #1 ; led green » 1 lost bit = C
+  53 003E 00 D8	    rrx R0, R0 ; led_grid » 1 highest bit = curr C
+  54 0040 B3 A8	    sub R3, R3, #1 ; i--
+  55 0042 FA 47	    bne out_hole_leds_loop ;if i != 0 PC -» loop
+  56 0044 00 EC	    lsr R0, R0, #8 ;R0 16 bit, outport uses lowest byte
+  57 0046 0D 5C	    bl outport_write
+  58 0048 0E 04	    pop lr
+  59 004A 0F B7	    mov pc,lr
+  60           	
+  61           	check_press:; R0 = inport (curr) R1 prev_state
+  62 004C 0E 24	    push lr
+  63 004E 0D 5C	    bl inport_read
+  64 0050 12 60	    mov R2, #1
+  65 0052 00 C1	    and R0, R0, R2 ; bit0 de inport
+  66 0054 91 0D	    ldr R1, in_prev_state ;R1 = in_prev_state (starts at 1 cuz inport read starts as 1 )
+  67 0056 42 0C	    ldr R2, in_prev_addr
+  68 0058 20 20	    str R0, [R2, #0]
+  69 005A 0E 04	    pop lr
+  70 005C 0F B7	    mov pc,lr
+  71           	
+  72           	isr:
+  73           	    ;todo
+  74 005E 20 B0	    movs pc, lr
   75           	
-  76           	inport_read: ; 0-3 buttons 5-7 level switches
-  77 005E 21 68	    mov R1, #INPORT_ADDRESS & 0xFF
-  78 0060 F1 7F	    movt R1, #(INPORT_ADDRESS >> 8) & 0xFF
-  79 0062 10 08	    ldrb R0, [R1, #0]
-  80 0064 0F B7	    mov pc, lr
-  81           	
-  82           	sleep: ;R0 = 10 * n seconds
-  83 0066 01 24	    push R1
-  84 0068 00 C0	    and R0, R0, R0
-  85 006A 06 40	    beq sleep_end
-  86           	sleep_outer_loop:
-  87 006C E1 63	    mov R1, #0x3E
-  88 006E 31 70	    movt R1, #0x03
-  89           	sleep_inner_loop:
-  90 0070 91 A8	    sub R1, R1, #1
-  91 0072 FE 47	    bne sleep_inner_loop
-  92 0074 80 A8	    sub R0, R0, #1
-  93 0076 FA 47	    bne sleep_outer_loop
-  94           	sleep_end:
-  95 0078 01 04	    pop R1
-  96 007A 0F B7	    mov pc, lr
-  97           	
-  98           	    .data
-  99           	in_prev_state:
- 100 007C 01 00	    .word 0x01
- 101           	sw_counter:; pTC t max = 5ms => if swC = 200, time = 1 sec
- 102 007E 00 00	    .word 0x00 ; changed ONLY in ISR called whenever pTC reaches 250 (5ms)
- 103           	
- 104           	    .stack
- 105 0080 00   		.space	STACK_SIZE
- 105 .... ..
- 105 00BF 00
- 106           	stack_top:
+  76           	in_prev_addr:
+  77 0060 88 00	    .word in_prev_state
+  78           	
+  79           	outport_write:
+  80 0062 21 6C		mov	R1, #OUTPORT_ADDRESS & 0xFF
+  81 0064 F1 7F		movt R1, #(OUTPORT_ADDRESS >> 8) & 0xFF
+  82 0066 10 28		strb R0, [R1, #0]
+  83 0068 0F B7		mov	pc, lr
+  84           	
+  85           	inport_read: ; 0-3 buttons 5-7 level switches
+  86 006A 21 68	    mov R1, #INPORT_ADDRESS & 0xFF
+  87 006C F1 7F	    movt R1, #(INPORT_ADDRESS >> 8) & 0xFF
+  88 006E 10 08	    ldrb R0, [R1, #0]
+  89 0070 0F B7	    mov pc, lr
+  90           	
+  91           	sleep: ;R0 = 10 * n seconds
+  92 0072 01 24	    push R1
+  93 0074 00 C0	    and R0, R0, R0
+  94 0076 06 40	    beq sleep_end
+  95           	sleep_outer_loop:
+  96 0078 E1 63	    mov R1, #0x3E
+  97 007A 31 70	    movt R1, #0x03
+  98           	sleep_inner_loop:
+  99 007C 91 A8	    sub R1, R1, #1
+ 100 007E FE 47	    bne sleep_inner_loop
+ 101 0080 80 A8	    sub R0, R0, #1
+ 102 0082 FA 47	    bne sleep_outer_loop
+ 103           	sleep_end:
+ 104 0084 01 04	    pop R1
+ 105 0086 0F B7	    mov pc, lr
  106           	
+ 107           	    .data
+ 108           	in_prev_state:
+ 109 0088 01 00	    .word 0x01
+ 110           	sw_counter:; pTC t max = 5ms => if swC = 200, time = 1 sec
+ 111 008A 00 00	    .word 0x00 ; changed ONLY in ISR called whenever pTC reaches 250 (5ms)
+ 112           	
+ 113           	    .stack
+ 114 008C 00   		.space	STACK_SIZE
+ 114 .... ..
+ 114 00CB 00
+ 115           	stack_top:
+ 115           	

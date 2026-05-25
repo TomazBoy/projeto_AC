@@ -7,6 +7,7 @@
 
     .text
 	b	program
+    b   isr
 
 program:
 	ldr	sp, stack_top_addr
@@ -16,10 +17,14 @@ stack_top_addr:
 	.word	stack_top
 
 main:; R4 = led_r R5 = led_g R6 = n seconds counter? idk lets see
+    mrs R0, CPSR ; move cpsr to r0
+    mov R1, #0x10
+    orr R0, R0, R1 ; enable interrupt bit 4
+    msr CPSR, R0 ; save cpsr
     mov R0, #pTC_TMR_ADDRESS && 0xFF
     movt R0, #(pTC_TMR_ADDRESS >> 8) && 0xFF
     mov R1, #pTC_COUNT
-    str R1 , [R0, #0]
+    str R1 , [R0, #0];stores value to save in pTC corresponding to 5ms each clock
 main_start:
     bl inport_read
     lsr R0, R0, #5
@@ -63,6 +68,10 @@ check_press:; R0 = inport (curr) R1 prev_state
     str R0, [R2, #0]
     pop lr
     mov pc,lr
+
+isr:
+    ;todo
+    movs pc, lr
 
 in_prev_addr:
     .word in_prev_state
