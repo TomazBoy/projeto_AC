@@ -1,6 +1,4 @@
     .equ    STACK_SIZE, 64
-    .equ    INPORT_ADDRESS, 0xFF82
-    .equ    OUTPORT_ADDRESS, 0xFFC2
     .equ    pTC_ADDRESS, 0xFF
     .equ    TCR, 0x00
     .equ    TMR, 0x01
@@ -33,34 +31,22 @@ isr:
     movt R0, #pTC_ADDRESS
     mov R1, #0
     str R1 ,[R0, #0]
-    ldr R0, sw_addr
-    ldr R1, sw_counter
-    mov R2, #0x64 ; 100 * 5ms = 0.5s
-    cmp R1, R2 ; if 0.5sec
+    ldr R0, sw_counter
+    mov R1, #0x64 ; 100 * 5ms = 0.5s
+    cmp R0, R1 ; if 0.5sec
     beq isr_end
-    add R1, R1, #1
-    str R1, [R0, #0]
+    add R0, R0, #1
+    ldr R1, sw_addr
+    str R0, [R1, #0]
     movs pc, lr
 isr_end:
-    add R6, R6, #1
-    mov R1, #0
-    str R1, [R0, #0]
+    add R6, R6, #1 ; .5 secs have passed
+    mov R0, #0 
+    str R0, [R1, #0] ; sw_counter back to zero
     movs pc, lr
 
 sw_addr:
     .word sw_counter
-
-outport_write:
-	mov	R1, #OUTPORT_ADDRESS & 0xFF
-	movt R1, #(OUTPORT_ADDRESS >> 8) & 0xFF
-	strb R0, [R1, #0]
-	mov	pc, lr
-
-inport_read: ; 0-3 buttons 5-7 level switches
-    mov R1, #INPORT_ADDRESS & 0xFF
-    movt R1, #(INPORT_ADDRESS >> 8) & 0xFF
-    ldrb R0, [R1, #0]
-    mov pc, lr
 
 stack_top_addr:
 	.word	stack_top

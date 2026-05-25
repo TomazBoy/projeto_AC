@@ -1,29 +1,25 @@
-P16 assembler v1.5 (Feb  9 2024)	c:\Users\tboyv\Documents\ISEL\1ano25-26\2semestre\ac\projeto\timer.lst	Mon May 25 13:19:10 2026
+P16 assembler v1.5 (Feb  9 2024)	c:\Users\tboyv\Documents\ISEL\1ano25-26\2semestre\ac\projeto\timer.lst	Mon May 25 20:56:55 2026
 
 Sections
 Index   Name            Address   Size
-0       .text           0000      004A 74
-1       .data           004A      0002 2
-2       .stack          004C      0040 64
+0       .text           0000      003E 62
+1       .data           003E      0002 2
+2       .stack          0040      0040 64
 
 Symbols
 Name                    Type      Value       Section
-INPORT_ADDRESS          ABSOLUTE  FF82 65410  .text
-inport_read             LABEL     0040 64     .text
 isr                     LABEL     001A 26     .text
-isr_end                 LABEL     002A 42     .text
+isr_end                 LABEL     0032 50     .text
 main                    LABEL     0008 8      .text
 main_start              LABEL     0018 24     .text
-OUTPORT_ADDRESS         ABSOLUTE  FFC2 65474  .text
-outport_write           LABEL     0038 56     .text
 program                 LABEL     0004 4      .text
 pTC_ADDRESS             ABSOLUTE  00FF 255    .text
 pTC_COUNT               ABSOLUTE  00FA 250    .text
 STACK_SIZE              ABSOLUTE  0040 64     .text
-stack_top               LABEL     008C 140    .stack
-stack_top_addr          LABEL     0048 72     .text
-sw_addr                 LABEL     0036 54     .text
-sw_counter              LABEL     004A 74     .data
+stack_top               LABEL     0080 128    .stack
+stack_top_addr          LABEL     003C 60     .text
+sw_addr                 LABEL     003A 58     .text
+sw_counter              LABEL     003E 62     .data
 TC                      ABSOLUTE  0002 2      .text
 TCR                     ABSOLUTE  0000 0      .text
 TIR                     ABSOLUTE  0003 3      .text
@@ -31,77 +27,65 @@ TMR                     ABSOLUTE  0001 1      .text
 
 Code listing
    1          	    .equ    STACK_SIZE, 64
-   2          	    .equ    INPORT_ADDRESS, 0xFF82
-   3          	    .equ    OUTPORT_ADDRESS, 0xFFC2
-   4          	    .equ    pTC_ADDRESS, 0xFF
-   5          	    .equ    TCR, 0x00
-   6          	    .equ    TMR, 0x01
-   7          	    .equ    TC, 0x02
-   8          	    .equ    TIR, 0x03
-   9          	    .equ    pTC_COUNT, 0xFA
-  10           	
-  11           	    .text
-  12 0000 01 58	    b   program
-  13 0002 0B 58	    b   isr
-  14           	
-  15           	program:
-  16 0004 1D 0E	    ldr sp, stack_top_addr
-  17 0006 00 58	    b main
-  18           	
-  19           	main:; R4 = led_r R5 = led_g R6 = n seconds counter? idk lets see
-  20 0008 60 B0	    mrs R0, CPSR ; move cpsr to r0
-  21 000A 01 61	    mov R1, #0x10
-  22 000C 80 C8	    orr R0, R0, R1 ; enable interrupt bit 4
-  23 000E 40 B0	    msr CPSR, R0 ; save CPSR
-  24 0010 10 60	    mov R0, #TMR
-  25 0012 F0 7F	    movt R0, #(pTC_ADDRESS) & 0xFF
-  26 0014 A1 6F	    mov R1, #pTC_COUNT
-  27 0016 01 20	    str R1 , [R0, #0];stores match value in TMR
-  28           	main_start:
-  29 0018 FF 5B	    b main_start
-  30           	
-  31           	isr:
-  32 001A D0 0C	    ldr R0, sw_addr
-  33 001C 61 0D	    ldr R1, sw_counter
-  34 001E A2 6F	    mov R2, #pTC_COUNT ; 200 * 5ms = 1sec
-  35 0020 10 B9	    cmp R1, R2 ; if 1 sec
-  36 0022 03 40	    beq isr_end
-  37 0024 91 A0	    add R1, R1, #1
-  38 0026 01 20	    str R1, [R0, #0]
-  39 0028 20 B0	    movs pc, lr
-  40           	isr_end:
-  41 002A E6 A0	    add R6, R6, #1
-  42 002C 30 60	    mov R0, #TIR
-  43 002E 00 70	    movt R0, #(pTC_ADDRESS >> 8) & 0xFF
-  44 0030 02 60	    mov R2, #0
-  45 0032 02 20	    str R2 ,[R0, #0]
-  46 0034 20 B0	    movs pc, lr
+   2          	    .equ    pTC_ADDRESS, 0xFF
+   3          	    .equ    TCR, 0x00
+   4          	    .equ    TMR, 0x01
+   5          	    .equ    TC, 0x02
+   6          	    .equ    TIR, 0x03
+   7          	    .equ    pTC_COUNT, 0xFA
+   8           	
+   9           	    .text
+  10 0000 01 58	    b   program
+  11 0002 0B 58	    b   isr
+  12           	
+  13           	program:
+  14 0004 BD 0D	    ldr sp, stack_top_addr
+  15 0006 00 58	    b main
+  16           	
+  17           	main:; R4 = led_r R5 = led_g R6 = n/2 seconds counte
+  18 0008 60 B0	    mrs R0, CPSR ; move cpsr to r0
+  19 000A 01 61	    mov R1, #0x10
+  20 000C 80 C8	    orr R0, R0, R1 ; enable interrupt bit 4
+  21 000E 40 B0	    msr CPSR, R0 ; save CPSR
+  22 0010 10 60	    mov R0, #TMR
+  23 0012 F0 7F	    movt R0, #pTC_ADDRESS
+  24 0014 A1 6F	    mov R1, #pTC_COUNT
+  25 0016 01 20	    str R1 , [R0, #0];stores match value in TMR
+  26           	main_start:
+  27 0018 FF 5B	    b main_start
+  28           	
+  29           	isr:
+  30 001A 30 60	    mov R0, #TIR
+  31 001C F0 7F	    movt R0, #pTC_ADDRESS
+  32 001E 01 60	    mov R1, #0
+  33 0020 01 20	    str R1 ,[R0, #0]
+  34 0022 D0 0C	    ldr R0, sw_counter
+  35 0024 41 66	    mov R1, #0x64 ; 100 * 5ms = 0.5s
+  36 0026 80 B8	    cmp R0, R1 ; if 0.5sec
+  37 0028 04 40	    beq isr_end
+  38 002A 80 A0	    add R0, R0, #1
+  39 002C 61 0C	    ldr R1, sw_addr
+  40 002E 10 20	    str R0, [R1, #0]
+  41 0030 20 B0	    movs pc, lr
+  42           	isr_end:
+  43 0032 E6 A0	    add R6, R6, #1 ; .5 secs have passed
+  44 0034 00 60	    mov R0, #0 
+  45 0036 10 20	    str R0, [R1, #0] ; sw_counter back to zero
+  46 0038 20 B0	    movs pc, lr
   47           	
   48           	sw_addr:
-  49 0036 4A 00	    .word sw_counter
+  49 003A 3E 00	    .word sw_counter
   50           	
-  51           	outport_write:
-  52 0038 21 6C		mov	R1, #OUTPORT_ADDRESS & 0xFF
-  53 003A F1 7F		movt R1, #(OUTPORT_ADDRESS >> 8) & 0xFF
-  54 003C 10 28		strb R0, [R1, #0]
-  55 003E 0F B7		mov	pc, lr
-  56           	
-  57           	inport_read: ; 0-3 buttons 5-7 level switches
-  58 0040 21 68	    mov R1, #INPORT_ADDRESS & 0xFF
-  59 0042 F1 7F	    movt R1, #(INPORT_ADDRESS >> 8) & 0xFF
-  60 0044 10 08	    ldrb R0, [R1, #0]
-  61 0046 0F B7	    mov pc, lr
-  62           	
-  63           	stack_top_addr:
-  64 0048 8C 00		.word	stack_top
-  65           	
-  66           	    .data
-  67           	sw_counter:; pTC t max = 5ms => if swC = 200, time = 1 sec
-  68 004A 00 00	    .word 0x00 ; changed ONLY in ISR called whenever pTC reaches 250 (5ms)
-  69           	
-  70           	    .stack
-  71 004C 00   	    .space  STACK_SIZE
-  71 .... ..
-  71 008B 00
-  72           	stack_top:
-  72           	
+  51           	stack_top_addr:
+  52 003C 80 00		.word	stack_top
+  53           	
+  54           	    .data
+  55           	sw_counter:; pTC t max = 5ms => if swC = 200, time = 1 sec
+  56 003E 00 00	    .word 0x00 ; changed ONLY in ISR called whenever pTC reaches 250 (5ms)
+  57           	
+  58           	    .stack
+  59 0040 00   	    .space  STACK_SIZE
+  59 .... ..
+  59 007F 00
+  60           	stack_top:
+  60           	
