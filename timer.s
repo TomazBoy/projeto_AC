@@ -29,20 +29,22 @@ main_start:
     b main_start
 
 isr:
+    mov R0, #TIR
+    movt R0, #pTC_ADDRESS
+    mov R1, #0
+    str R1 ,[R0, #0]
     ldr R0, sw_addr
     ldr R1, sw_counter
-    mov R2, #pTC_COUNT ; 200 * 5ms = 1sec
-    cmp R1, R2 ; if 1 sec
+    mov R2, #0x64 ; 100 * 5ms = 0.5s
+    cmp R1, R2 ; if 0.5sec
     beq isr_end
     add R1, R1, #1
     str R1, [R0, #0]
     movs pc, lr
 isr_end:
     add R6, R6, #1
-    mov R0, #TIR
-    movt R0, #pTC_ADDRESS & 0xFF
-    mov R2, #0
-    str R2 ,[R0, #0]
+    mov R1, #0
+    str R1, [R0, #0]
     movs pc, lr
 
 sw_addr:
