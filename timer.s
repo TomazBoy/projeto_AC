@@ -16,13 +16,13 @@ program:
     ldr sp, stack_top_addr
     b main
 
-main:; R4 = led_r R5 = led_g R6 = n seconds counter? idk lets see
+main:; R4 = led_r R5 = led_g R6 = n/2 seconds counte
     mrs R0, CPSR ; move cpsr to r0
     mov R1, #0x10
     orr R0, R0, R1 ; enable interrupt bit 4
     msr CPSR, R0 ; save CPSR
     mov R0, #TMR
-    movt R0, #(pTC_ADDRESS) & 0xFF
+    movt R0, #pTC_ADDRESS
     mov R1, #pTC_COUNT
     str R1 , [R0, #0];stores match value in TMR
 main_start:
@@ -40,7 +40,7 @@ isr:
 isr_end:
     add R6, R6, #1
     mov R0, #TIR
-    movt R0, #(pTC_ADDRESS >> 8) & 0xFF
+    movt R0, #pTC_ADDRESS & 0xFF
     mov R2, #0
     str R2 ,[R0, #0]
     movs pc, lr
