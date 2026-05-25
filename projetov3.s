@@ -21,8 +21,8 @@ main:; R4 = led_r R5 = led_g R6 = n seconds counter? idk lets see
     mov R1, #0x10
     orr R0, R0, R1 ; enable interrupt bit 4
     msr CPSR, R0 ; save cpsr
-    mov R0, #pTC_TMR_ADDRESS && 0xFF
-    movt R0, #(pTC_TMR_ADDRESS >> 8) && 0xFF
+    mov R0, #pTC_TMR_ADDRESS & 0xFF
+    movt R0, #(pTC_TMR_ADDRESS >> 8) & 0xFF
     mov R1, #pTC_COUNT
     str R1 , [R0, #0];stores value to save in pTC corresponding to 5ms each clock
 main_start:
@@ -72,7 +72,7 @@ check_press:; R0 = inport (curr) R1 prev_state
 isr:
     ldr R0, sw_addr
     ldr R1, sw_counter
-    ldr R2, pTC_COUNT
+    mov R2, #pTC_COUNT
     cmp R1, R2
     beq isr_end
     add R1, R1, #1
@@ -98,22 +98,6 @@ inport_read: ; 0-3 buttons 5-7 level switches
     mov R1, #INPORT_ADDRESS & 0xFF
     movt R1, #(INPORT_ADDRESS >> 8) & 0xFF
     ldrb R0, [R1, #0]
-    mov pc, lr
-
-sleep: ;R0 = 10 * n seconds
-    push R1
-    and R0, R0, R0
-    beq sleep_end
-sleep_outer_loop:
-    mov R1, #0x3E
-    movt R1, #0x03
-sleep_inner_loop:
-    sub R1, R1, #1
-    bne sleep_inner_loop
-    sub R0, R0, #1
-    bne sleep_outer_loop
-sleep_end:
-    pop R1
     mov pc, lr
 
     .data
