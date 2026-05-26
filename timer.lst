@@ -1,4 +1,4 @@
-P16 assembler v1.5 (Feb  9 2024)	c:\Users\tboyv\Documents\ISEL\1ano25-26\2semestre\ac\projeto\timer.lst	Tue May 26 12:32:45 2026
+P16 assembler v1.5 (Feb  9 2024)	c:\Users\tboyv\Documents\ISEL\1ano25-26\2semestre\ac\projeto\timer.lst	Tue May 26 12:33:18 2026
 
 Sections
 Index   Name            Address   Size
@@ -98,7 +98,7 @@ Code listing
   67 0058 9C 00		.word	stack_top
   68           	
   69           	    .data
-  70           	sw_counter:; pTC t max = 5ms => if swC = 200, time = 1 sec
+  70           	sw_counter:; pTC t max = 5ms => if swC = 100, time = .5sec
   71 005A 00 00	    .word 0x00 ; changed ONLY in ISR called whenever pTC reaches 250 (5ms)
   72           	
   73           	    .stack
