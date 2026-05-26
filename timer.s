@@ -67,7 +67,7 @@ stack_top_addr:
 	.word	stack_top
 
     .data
-sw_counter:; pTC t max = 5ms => if swC = 200, time = 1 sec
+sw_counter:; pTC t max = 5ms => if swC = 100, time = .5sec
     .word 0x00 ; changed ONLY in ISR called whenever pTC reaches 250 (5ms)
 
     .stack
