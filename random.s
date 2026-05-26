@@ -1,10 +1,11 @@
-    .equ STACK_SIZE, 64
+    .equ    STACK_SIZE, 64
+
     .text 
-    b program
+    b    program
     
 program:
     ldr sp, stack_top_addr
-    b main
+    b    main
 
 stack_top_addr:
     .word stack_top
@@ -13,5 +14,5 @@ main:
     b    .
 
     .stack
-    .space STACK_SIZE
+    .space    STACK_SIZE
 stack_top:
