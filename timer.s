@@ -36,6 +36,10 @@ main_start:
     beq main_end
     b main_start
 main_end:
+    mov R0, #TCR
+    movt R0, #pTC_ADDRESS
+    mov R1, #1
+    str R1, [R0, #0]
     b   .
 
 isr:
