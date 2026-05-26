@@ -80,7 +80,7 @@ game_outer_loop:
     mov R2, #0
     cmp R7, R2 ; check if there is any more rounds left
     beq game_end
-    sub R7, R7, #1
+    sub R7, R7, #1 ;rounds -1
     b   game_setup
 game_end:
     mov R0, #2
