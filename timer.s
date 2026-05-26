@@ -20,16 +20,14 @@ main:; R4 = led_r R5 = led_g R6 = n/2 seconds counter
     orr R0, R0, R1 ; enable interrupt bit 4
     msr CPSR, R0 ; save CPSR
     mov R0, #TMR ; select TMR
-    movt R0, #pTC_ADDRESS
     mov R1, #pTC_MAX_VAL
-    str R1 , [R0, #0];stores match value in TMR
+    bl pTC_sel
     mov R6, #2 ; 1 second
     mov R0, #TCR; ; select TCR
-    movt R0, #pTC_ADDRESS
     mov R1, #1
-    str R1, [R0, #0] ; TCR on => MR on => counting reseted and paused
+    bl pTC_sel ; reset and stop counter
     sub R1, R1, R1
-    str R1, [R0, #0] ; TCR off => MR off => counting reseted and restarted
+    bl pTC_sel ; restart counter
 main_start:
     mov R0, #0
     cmp R0, R6
@@ -37,16 +35,17 @@ main_start:
     b main_start
 main_end:
     mov R0, #TCR
-    movt R0, #pTC_ADDRESS
     mov R1, #1
-    str R1, [R0, #0]
+    bl pTC_sel ; reset and stop counter
     b   .
-
+pTC_sel:
+    movt R0, #pTC_ADDRESS
+    str R1 , [R0, #0]
+    mov pc, lr
 isr:
     mov R0, #TIR ; select TIR
-    movt R0, #pTC_ADDRESS
     mov R1, #0
-    str R1 ,[R0, #0] ; every store gets write enable on wich resets TIR and stops interrupt request
+    bl pTC_sel ; stop interrupt request
     ldr R0, sw_counter
     mov R1, #0x64 ; 100 * 5ms = 0.5s
     cmp R0, R1 ; if 0.5s
