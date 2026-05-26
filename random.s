@@ -13,4 +13,5 @@ main:
     b    .
 
     .stack
+    .space STACK_SIZE
 stack_top:
