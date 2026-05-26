@@ -12,21 +12,23 @@
 
 program:
     ldr sp, stack_top_addr
-    b main
+    b main_prep
 
-main:; R4 = led_r R5 = led_g R6 = n/2 seconds counter
+main_prep:; R4 = led_r R5 = led_g R6 = n/2 seconds counter
     mrs R0, CPSR ; move cpsr to r0
     mov R1, #0x10
     orr R0, R0, R1 ; enable interrupt bit 4
     msr CPSR, R0 ; save CPSR
+    bl  
+    mov R0, #TCR; ; select TCR
+    mov R1, #1
+    bl pTC_sel ; reset and stop counter
     mov R0, #TMR ; select TMR
     mov R1, #pTC_MAX_VAL
     bl pTC_sel
     mov R6, #2 ; 1 second
     mov R0, #TCR; ; select TCR
-    mov R1, #1
-    bl pTC_sel ; reset and stop counter
-    sub R1, R1, R1
+    mov R1, #1 
     bl pTC_sel ; restart counter
 main_start:
     mov R0, #0
@@ -47,7 +49,7 @@ isr:
     mov R1, #0
     bl pTC_sel ; stop interrupt request
     ldr R0, sw_counter
-    mov R1, #0x64 ; 100 * 5ms = 0.5s
+    mov R1, #0x32 ; 100 * 5ms = 0.5s
     cmp R0, R1 ; if 0.5s
     beq isr_end
     add R0, R0, #1 ; if R0 != 100 R0++

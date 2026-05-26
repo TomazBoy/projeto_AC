@@ -1,4 +1,4 @@
-P16 assembler v1.5 (Feb  9 2024)	c:\Users\tboyv\Documents\ISEL\1ano25-26\2semestre\ac\projeto\projetov2.lst	Sun May 24 16:57:16 2026
+P16 assembler v1.5 (Feb  9 2024)	c:\Users\tboyv\Documents\ISEL\1ano25-26\2semestre\ac\projeto\projetov2.lst	Tue May 26 14:58:12 2026
 
 Sections
 Index   Name            Address   Size
@@ -124,13 +124,13 @@ Code listing
   88 0078 10 08	    ldrb R0, [R1, #0]
   89 007A 0F B7	    mov pc, lr
   90           	
-  91           	sleep: ;R0 = n segundos
+  91           	sleep: ;R0 = n/10 segundos
   92 007C 01 24	    push R1
   93 007E 00 C0	    and R0, R0, R0
   94 0080 06 40	    beq sleep_end
   95           	sleep_outer_loop:
-  96 0082 E1 63	    mov R1, #0x3E ;to change
-  97 0084 31 70	    movt R1, #0x03; to change
+  96 0082 E1 63	    mov R1, #0x3E
+  97 0084 31 70	    movt R1, #0x03
   98           	sleep_inner_loop:
   99 0086 91 A8	    sub R1, R1, #1
  100 0088 FE 47	    bne sleep_inner_loop

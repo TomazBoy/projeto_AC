@@ -88,13 +88,13 @@ inport_read: ; 0-3 buttons 5-7 level switches
     ldrb R0, [R1, #0]
     mov pc, lr
 
-sleep: ;R0 = n segundos
+sleep: ;R0 = n/10 segundos
     push R1
     and R0, R0, R0
     beq sleep_end
 sleep_outer_loop:
-    mov R1, #0x3E ;to change
-    movt R1, #0x03; to change
+    mov R1, #0x3E
+    movt R1, #0x03
 sleep_inner_loop:
     sub R1, R1, #1
     bne sleep_inner_loop
