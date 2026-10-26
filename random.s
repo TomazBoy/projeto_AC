@@ -11,6 +11,8 @@ stack_top_addr:
     .word stack_top
 
 main:
+    push r2
+    push r1
     mov     r2, #0       ; Inicializa p = 0
     cmp     r1, r0       ; Compara m e M
     blo     while        ; Se m <= M, segue normalmente
@@ -27,9 +29,9 @@ while:
     b       while        ; Volta para o início do loop
 
 while_end:
+    pop r1
+    pop r2
     b       .            ; Fim do programa
-
-    b    .
 
     .stack
     .space    STACK_SIZE
